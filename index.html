@@ -6,80 +6,61 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --primary: #4caf50; --bg: #f8faf9; --card: #ffffff; --text: #333; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 70px; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 70px; overflow-x: hidden; }
         
-        /* Top Bar */
         .top-bar { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10; }
         .user-info { font-weight: bold; font-size: 1.1rem; color: #555; }
-        .currency { display: flex; gap: 10px; font-weight: bold; }
-        .coin-box { color: #fbc02d; background: #fffde7; padding: 5px 12px; border-radius: 20px; border: 1px solid #fff176; }
+        .coin-box { color: #fbc02d; background: #fffde7; padding: 5px 12px; border-radius: 20px; border: 1px solid #fff176; font-weight: bold; }
 
-        /* Area Tabs */
         .area-tabs { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
-        .tab { padding: 8px 20px; border-radius: 12px; border: 1px solid #ddd; background: white; font-size: 12px; position: relative; }
-        .tab.active { border: 2px solid var(--primary); background: #e8f5e9; }
-        .lock-icon { font-size: 10px; display: block; color: #f44336; }
+        .tab { padding: 8px 20px; border-radius: 12px; border: 1px solid #ddd; background: white; font-size: 12px; text-align: center; }
+        .tab.active { border: 2px solid var(--primary); background: #e8f5e9; font-weight: bold; }
 
-        /* Grid System */
         .farm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 15px; }
-        .slot-card { background: var(--card); border-radius: 15px; padding: 10px; border: 1px solid #e0e0e0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .slot-card { background: var(--card); border-radius: 15px; padding: 10px; border: 1px solid #e0e0e0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
         .slot-card img { width: 80%; max-width: 90px; margin: 10px 0; }
-        .plant-name { font-size: 13px; font-weight: bold; margin: 5px 0; }
         
-        /* Buttons */
-        .harvest-btn { background: #ffca28; border: none; padding: 10px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; color: #5d4037; font-size: 12px; }
-        .harvest-btn:disabled { background: #eee; color: #999; }
-        .empty-slot { border: 2px dashed #ccc; background: #f1f1f1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; color: #999; }
+        .harvest-btn { background: #ffca28; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; color: #5d4037; font-size: 13px; transition: 0.2s; }
+        .harvest-btn:disabled { background: #eee; color: #999; cursor: not-allowed; }
+        .empty-slot { border: 2px dashed #ccc; background: #f1f1f1; display: flex; align-items: center; justify-content: center; min-height: 160px; color: #999; font-size: 12px; }
 
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-        .nav-item { font-size: 11px; color: #777; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        /* Bottom Nav - Cleaned */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .nav-item { font-size: 12px; color: #777; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; width: 33%; }
         .nav-item.active { color: var(--primary); font-weight: bold; }
-        .nav-icon { font-size: 20px; }
+        .nav-icon { font-size: 22px; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
         <div class="user-info" id="user-name">Sheru</div>
-        <div class="currency">
-            <div class="coin-box">💰 <span id="balance">0</span></div>
-            <div class="coin-box" style="color: #9c27b0; background: #f3e5f5; border-color: #e1bee7;">💎 0</div>
-        </div>
+        <div class="coin-box">💰 <span id="balance">0</span></div>
     </div>
 
     <div class="area-tabs">
         <div class="tab active">Area 1<br>● ● ○ ○</div>
-        <div class="tab">Area 2 <span class="lock-icon">🔒 Locked</span></div>
-        <div class="tab">Area 3 <span class="lock-icon">🔒 Locked</span></div>
+        <div class="tab" style="color:#999;">Area 2<br>🔒 Locked</div>
     </div>
 
     <div class="farm-grid">
-        <div class="slot-card" id="slot-1">
+        <div class="slot-card">
             <div style="display:flex; justify-content: space-between; font-size: 10px;">
-                <span>Banana Tree</span>
-                <span style="background:#f44336; color:white; padding:1px 4px; border-radius:4px;">Ads</span>
+                <span style="font-weight:bold;">Banana Tree</span>
+                <span style="background:#f44336; color:white; padding:1px 5px; border-radius:4px; font-size:9px;">ADS</span>
             </div>
             <img src="https://cdn-icons-png.flaticon.com/512/2329/2329865.png">
             <button class="harvest-btn" id="hBtn" onclick="handleHarvest()">Harvest 40 pts</button>
-            <div id="timer" style="font-size: 10px; margin-top: 5px; color: #666;">Permanent Plant</div>
+            <div id="timer" style="font-size: 11px; margin-top: 8px; color: #4caf50; font-weight: 500;">Ready!</div>
         </div>
 
-        <div class="slot-card empty-slot">
-            <img src="https://cdn-icons-png.flaticon.com/512/628/628283.png" style="opacity: 0.3; width: 50px;">
-            Empty Slot
-        </div>
-        <div class="slot-card empty-slot">Empty Slot</div>
         <div class="slot-card empty-slot">Empty Slot</div>
     </div>
 
     <nav class="bottom-nav">
         <div class="nav-item active"><span class="nav-icon">🌲</span>Farm</div>
         <div class="nav-item"><span class="nav-icon">🏪</span>Shop</div>
-        <div class="nav-item"><span class="nav-icon">👑</span>Plans</div>
-        <div class="nav-item"><span class="nav-icon">💵</span>Deposit</div>
         <div class="nav-item"><span class="nav-icon">₿</span>Withdraw</div>
-        <div class="nav-item"><span class="nav-icon">☰</span>Menu</div>
     </nav>
 
     <script>
@@ -87,40 +68,58 @@
         tg.expand();
 
         let score = 0;
+        let nextHarvestTime = 0;
+        const hBtn = document.getElementById('hBtn');
+        const timerDisplay = document.getElementById('timer');
+        const balanceDisplay = document.getElementById('balance');
+
         document.getElementById('user-name').innerText = tg.initDataUnsafe?.user?.first_name || "Sheru";
 
-        // Load Data
-        tg.CloudStorage.getItem('user_coins', (err, value) => {
-            if (!err && value) {
-                score = parseInt(value);
-                document.getElementById('balance').innerText = score;
+        // Load Data (Coins + Timer)
+        tg.CloudStorage.getItems(['user_coins', 'next_harvest'], (err, values) => {
+            if (!err) {
+                if (values.user_coins) {
+                    score = parseInt(values.user_coins);
+                    balanceDisplay.innerText = score;
+                }
+                if (values.next_harvest) {
+                    nextHarvestTime = parseInt(values.next_harvest);
+                    checkTimer();
+                }
             }
         });
 
         function handleHarvest() {
+            const now = Date.now();
             score += 40;
-            document.getElementById('balance').innerText = score;
-            tg.CloudStorage.setItem('user_coins', score.toString());
+            balanceDisplay.innerText = score;
             
-            startTimer(180); // 3 Minute Timer
+            // 3 Minute Timer Set Karein (180000 milliseconds)
+            nextHarvestTime = now + (3 * 60 * 1000);
+            
+            // Save to Cloud
+            tg.CloudStorage.setItem('user_coins', score.toString());
+            tg.CloudStorage.setItem('next_harvest', nextHarvestTime.toString());
+            
+            checkTimer();
         }
 
-        function startTimer(seconds) {
-            const btn = document.getElementById('hBtn');
-            const timerMsg = document.getElementById('timer');
-            btn.disabled = true;
-            let count = seconds;
+        function checkTimer() {
+            const timerInterval = setInterval(() => {
+                const now = Date.now();
+                const diff = nextHarvestTime - now;
 
-            const countdown = setInterval(() => {
-                count--;
-                let m = Math.floor(count / 60);
-                let s = count % 60;
-                timerMsg.innerText = `Growing: ${m}m ${s}s`;
-
-                if (count <= 0) {
-                    clearInterval(countdown);
-                    btn.disabled = false;
-                    timerMsg.innerText = "Ready to Harvest!";
+                if (diff <= 0) {
+                    clearInterval(timerInterval);
+                    hBtn.disabled = false;
+                    hBtn.innerText = "Harvest 40 pts";
+                    timerDisplay.innerText = "Ready!";
+                } else {
+                    hBtn.disabled = true;
+                    const mins = Math.floor(diff / 60000);
+                    const secs = Math.floor((diff % 60000) / 1000);
+                    hBtn.innerText = "Growing...";
+                    timerDisplay.innerText = `Wait: ${mins}m ${secs}s`;
                 }
             }, 1000);
         }
