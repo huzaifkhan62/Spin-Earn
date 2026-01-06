@@ -3,30 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Fruit Crypto Farm</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --primary: #4caf50; --bg: #f8faf9; --card: #ffffff; --text: #333; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 70px; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
         
+        /* Top Bar */
         .top-bar { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10; }
         .user-info { font-weight: bold; font-size: 1.1rem; color: #555; }
         .coin-box { color: #fbc02d; background: #fffde7; padding: 5px 12px; border-radius: 20px; border: 1px solid #fff176; font-weight: bold; }
 
+        /* Area Tabs */
         .area-tabs { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
         .tab { padding: 8px 20px; border-radius: 12px; border: 1px solid #ddd; background: white; font-size: 12px; text-align: center; }
         .tab.active { border: 2px solid var(--primary); background: #e8f5e9; font-weight: bold; }
 
+        /* Grid */
         .farm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 15px; }
-        .slot-card { background: var(--card); border-radius: 15px; padding: 10px; border: 1px solid #e0e0e0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
+        .slot-card { background: var(--card); border-radius: 15px; padding: 10px; border: 1px solid #e0e0e0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .slot-card img { width: 80%; max-width: 90px; margin: 10px 0; }
         
+        /* Buttons */
         .harvest-btn { background: #ffca28; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; color: #5d4037; font-size: 13px; transition: 0.2s; }
         .harvest-btn:disabled { background: #eee; color: #999; cursor: not-allowed; }
         .empty-slot { border: 2px dashed #ccc; background: #f1f1f1; display: flex; align-items: center; justify-content: center; min-height: 160px; color: #999; font-size: 12px; }
 
-        /* Bottom Nav - Cleaned */
+        /* Navigation */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-        .nav-item { font-size: 12px; color: #777; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; width: 33%; }
+        .nav-item { font-size: 12px; color: #777; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; }
         .nav-item.active { color: var(--primary); font-weight: bold; }
         .nav-icon { font-size: 22px; }
     </style>
@@ -34,7 +39,7 @@
 <body>
 
     <div class="top-bar">
-        <div class="user-info" id="user-name">Sheru</div>
+        <div class="user-info" id="user-name">Loading...</div>
         <div class="coin-box">💰 <span id="balance">0</span></div>
     </div>
 
@@ -49,9 +54,9 @@
                 <span style="font-weight:bold;">Banana Tree</span>
                 <span style="background:#f44336; color:white; padding:1px 5px; border-radius:4px; font-size:9px;">ADS</span>
             </div>
-            <img src="https://cdn-icons-png.flaticon.com/512/2329/2329865.png">
-            <button class="harvest-btn" id="hBtn" onclick="handleHarvest()">Harvest 40 pts</button>
-            <div id="timer" style="font-size: 11px; margin-top: 8px; color: #4caf50; font-weight: 500;">Ready!</div>
+            <img src="https://cdn-icons-png.flaticon.com/512/2329/2329865.png" alt="Banana">
+            <button class="harvest-btn" id="hBtn" onclick="handleHarvest()">Loading...</button>
+            <div id="timer" style="font-size: 11px; margin-top: 8px; color: #4caf50; font-weight: 500;">Please wait</div>
         </div>
 
         <div class="slot-card empty-slot">Empty Slot</div>
@@ -66,16 +71,23 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-
+        
         let score = 0;
         let nextHarvestTime = 0;
+        let isDataLoaded = false;
+
         const hBtn = document.getElementById('hBtn');
         const timerDisplay = document.getElementById('timer');
         const balanceDisplay = document.getElementById('balance');
+        const userNameDisplay = document.getElementById('user-name');
 
-        document.getElementById('user-name').innerText = tg.initDataUnsafe?.user?.first_name || "Sheru";
+        // Initial UI Lock
+        hBtn.disabled = true;
 
-        // Load Data (Coins + Timer)
+        // User data setup
+        userNameDisplay.innerText = tg.initDataUnsafe?.user?.first_name || "Sheru";
+
+        // 1. Data Load from Telegram Cloud
         tg.CloudStorage.getItems(['user_coins', 'next_harvest'], (err, values) => {
             if (!err) {
                 if (values.user_coins) {
@@ -84,44 +96,53 @@
                 }
                 if (values.next_harvest) {
                     nextHarvestTime = parseInt(values.next_harvest);
-                    checkTimer();
                 }
             }
+            isDataLoaded = true;
+            startTimerLogic();
         });
 
-        function handleHarvest() {
-            const now = Date.now();
-            score += 40;
-            balanceDisplay.innerText = score;
-            
-            // 3 Minute Timer Set Karein (180000 milliseconds)
-            nextHarvestTime = now + (3 * 60 * 1000);
-            
-            // Save to Cloud
-            tg.CloudStorage.setItem('user_coins', score.toString());
-            tg.CloudStorage.setItem('next_harvest', nextHarvestTime.toString());
-            
-            checkTimer();
-        }
+        // 2. Timer Logic (Fixed & Permanent)
+        function startTimerLogic() {
+            setInterval(() => {
+                if (!isDataLoaded) return;
 
-        function checkTimer() {
-            const timerInterval = setInterval(() => {
                 const now = Date.now();
                 const diff = nextHarvestTime - now;
 
                 if (diff <= 0) {
-                    clearInterval(timerInterval);
                     hBtn.disabled = false;
                     hBtn.innerText = "Harvest 40 pts";
                     timerDisplay.innerText = "Ready!";
+                    timerDisplay.style.color = "#4caf50";
                 } else {
                     hBtn.disabled = true;
                     const mins = Math.floor(diff / 60000);
                     const secs = Math.floor((diff % 60000) / 1000);
                     hBtn.innerText = "Growing...";
                     timerDisplay.innerText = `Wait: ${mins}m ${secs}s`;
+                    timerDisplay.style.color = "#f44336";
                 }
             }, 1000);
+        }
+
+        // 3. Harvest Action
+        function handleHarvest() {
+            if (!isDataLoaded || hBtn.disabled) return;
+
+            const now = Date.now();
+            score += 40;
+            balanceDisplay.innerText = score;
+            
+            // Set next harvest to 3 minutes from now
+            nextHarvestTime = now + (3 * 60 * 1000);
+            
+            // Save to Cloud
+            tg.CloudStorage.setItem('user_coins', score.toString());
+            tg.CloudStorage.setItem('next_harvest', nextHarvestTime.toString());
+            
+            // Feedback
+            tg.HapticFeedback.impactOccurred('medium');
         }
     </script>
 </body>
