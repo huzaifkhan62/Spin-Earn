@@ -8,316 +8,124 @@
     <script src="https://adsgram.ai/sdk-v1.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-        :root {
-            --dark-bg: #1a0a2c; /* Dark Purple */
-            --glow-color: #8a2be2; /* Blue Violet */
-            --btn-bg: #6a1b9a; /* Deep Purple */
-            --text-color: #e0e0e0;
-            --wheel-border: #4a0e7e; /* Darker Purple */
-        }
-        body {
-            background: var(--dark-bg);
-            color: var(--text-color);
-            font-family: 'Orbitron', sans-serif;
-            margin: 0;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
+        :root { --bg: #120522; --glow: #a020f0; --btn: #7b1fa2; --gold: #ffeb3b; }
+        body { background: var(--bg); color: white; font-family: 'Orbitron', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        
+        .header { width: 85%; display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 15px; margin-bottom: 20px; border: 1px solid var(--glow); }
+        .balance { color: var(--gold); font-weight: bold; font-size: 1.2rem; }
 
-        .header {
-            width: 90%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            margin-bottom: 30px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
-        }
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--glow-color);
-            text-shadow: 0 0 5px var(--glow-color);
-        }
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #4a0e7e; /* Placeholder */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: white;
-            border: 2px solid var(--glow-color);
-            box-shadow: 0 0 8px var(--glow-color);
-        }
-        .balance-display {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #ffeb3b; /* Bright Yellow */
-            text-shadow: 0 0 8px rgba(255, 235, 59, 0.5);
-            background: rgba(0,0,0,0.4);
-            padding: 8px 15px;
-            border-radius: 20px;
-            border: 1px solid #ffeb3b;
-        }
+        .wheel-box { position: relative; width: 300px; height: 300px; margin-bottom: 30px; }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; border: 5px solid var(--glow); transition: transform 4s cubic-bezier(0.1, 0.7, 0.1, 1); background: conic-gradient(#e74c3c 0% 16%, #3498db 16% 33%, #2ecc71 33% 50%, #f1c40f 50% 66%, #9b59b6 66% 83%, #e67e22 83% 100%); box-shadow: 0 0 30px var(--glow); }
+        
+        .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 35px; z-index: 10; filter: drop-shadow(0 0 5px white); }
+        .center-dot { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: #222; border: 3px solid var(--glow); border-radius: 50%; z-index: 5; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 
-        /* Wheel Container */
-        .wheel-area {
-            position: relative;
-            width: 320px;
-            height: 320px;
-            border-radius: 50%;
-            background: radial-gradient(circle at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 70%);
-            border: 5px solid var(--wheel-border);
-            box-shadow: 0 0 30px rgba(138, 43, 226, 0.7), inset 0 0 20px rgba(138, 43, 226, 0.5);
-            margin-bottom: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #wheel {
-            width: 280px;
-            height: 280px;
-            border-radius: 50%;
-            position: relative;
-            transition: transform 5s cubic-bezier(0.2, 0.8, 0.2, 1); /* Smoother spin */
-            background: conic-gradient(
-                #e74c3c 0% 16.66%, /* Red */
-                #3498db 16.66% 33.33%, /* Blue */
-                #2ecc71 33.33% 50%, /* Green */
-                #f1c40f 50% 66.66%, /* Yellow */
-                #9b59b6 66.66% 83.33%, /* Purple */
-                #e67e22 83.33% 100% /* Orange */
-            );
-            border: 3px solid rgba(0,0,0,0.5); /* Inner border for segments */
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.7);
-        }
-        .segment-text {
-            position: absolute;
-            width: 50%;
-            height: 50%;
-            transform-origin: 100% 100%;
-            left: 50%;
-            top: 0;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            padding-left: 10%;
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #fff;
-            text-shadow: 0 0 5px rgba(0,0,0,0.8);
-            transform: rotate(var(--angle)) translateY(-50%) rotateY(0deg) translateX(calc(-50% - 10px)); /* For text orientation */
-        }
-        .pointer-arrow {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 40px;
-            background: url('https://i.imgur.com/kYmQ0lD.png') no-repeat center center / contain; /* Custom arrow image */
-            z-index: 10;
-        }
-        .wheel-center-avatar {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #333; /* Default avatar background */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: #fff;
-            border: 4px solid var(--glow-color);
-            box-shadow: 0 0 15px var(--glow-color), inset 0 0 10px rgba(0,0,0,0.5);
-            z-index: 5;
-        }
-
-        /* Spin Button */
-        .spin-btn {
-            background: var(--btn-bg);
-            color: var(--text-color);
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 700;
-            padding: 15px 40px;
-            border-radius: 50px;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.7);
-            transition: all 0.3s ease;
-            text-shadow: 0 0 8px rgba(255,255,255,0.7);
-            margin-top: 20px;
-        }
-        .spin-btn:hover {
-            background: var(--glow-color);
-            box-shadow: 0 0 30px var(--glow-color);
-            transform: scale(1.05);
-        }
-        .spin-btn:disabled {
-            background: #4a0e7e;
-            color: #999;
-            box-shadow: none;
-            cursor: not-allowed;
-            transform: none;
-            text-shadow: none;
-        }
-
-        .status-text {
-            margin-top: 30px;
-            font-size: 1.1rem;
-            color: #aaa;
-            text-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
+        .spin-btn { background: var(--btn); color: white; border: none; padding: 15px 45px; border-radius: 50px; font-size: 1.5rem; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; box-shadow: 0 0 20px var(--glow); transition: 0.3s; }
+        .spin-btn:active { transform: scale(0.95); }
+        .spin-btn:disabled { background: #444; box-shadow: none; opacity: 0.7; }
+        
+        .status { margin-top: 20px; font-size: 0.9rem; color: #bbb; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="user-profile">
-            <div class="user-avatar" id="user-avatar">?</div>
-            <span id="u-name">Player</span>
-        </div>
-        <div class="balance-display">💰 <span id="balance">0</span></div>
+        <div id="u-name">Player</div>
+        <div class="balance">💰 <span id="balance">0</span></div>
     </div>
 
-    <div class="wheel-area">
-        <div id="wheel">
-            </div>
-        <div class="pointer-arrow"></div>
-        <div class="wheel-center-avatar" id="wheel-center-avatar">🎮</div>
+    <div class="wheel-box">
+        <img src="https://cdn-icons-png.flaticon.com/512/8215/8215539.png" class="pointer">
+        <div id="wheel"></div>
+        <div class="center-dot" id="center-txt">🎮</div>
     </div>
 
-    <button class="spin-btn" id="spinBtn" onclick="startSpinFlow()">SPIN NOW</button>
-    
-    <div class="status-text" id="status-message">Watch a short ad for 1 FREE Spin!</div>
+    <button class="spin-btn" id="spinBtn" onclick="initSpin()">SPIN NOW</button>
+    <p class="status" id="msg">Watch an ad to Spin!</p>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.ready();
         
-        // Block ID Fixed: 20692
         const AdController = window.Adsgram.init({ blockId: "20692" });
 
-        let balance = 0;
-        let isSpinning = false;
-        let currentRotation = 0; // Tracks total rotation for continuous spinning
+        let score = 0;
+        let spinning = false;
+        let rotation = 0;
 
-        const prizes = [10, 50, 100, 250, 500, 1000]; // Defined prizes
-        const segmentCount = prizes.length; // Number of segments
-        const segmentAngle = 360 / segmentCount;
-
-        const wheel = document.getElementById('wheel');
-        const spinBtn = document.getElementById('spinBtn');
-        const balanceDisplay = document.getElementById('balance');
-        const statusMessage = document.getElementById('status-message');
-        const userNameDisplay = document.getElementById('u-name');
-        const userAvatarInitial = document.getElementById('user-avatar');
-        const wheelCenterAvatar = document.getElementById('wheel-center-avatar');
-
-        // Dynamic segment creation for text
-        function createWheelSegments() {
-            wheel.innerHTML = ''; // Clear existing
-            prizes.forEach((prize, index) => {
-                const textContainer = document.createElement('div');
-                textContainer.className = 'segment-text';
-                textContainer.style.setProperty('--angle', `${index * segmentAngle + segmentAngle / 2}deg`);
-                textContainer.style.transform = `rotate(${index * segmentAngle + segmentAngle / 2}deg) translate(80px, 0px)`; /* Adjust text position */
-                textContainer.innerText = prize;
-                wheel.appendChild(textContainer);
-            });
-        }
-        createWheelSegments(); // Call on load
-
-        // Initialize User Info and Balance
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            const user = tg.initDataUnsafe.user;
-            userNameDisplay.innerText = user.first_name || "Player";
-            userAvatarInitial.innerText = user.first_name ? user.first_name.charAt(0).toUpperCase() : '?';
-            wheelCenterAvatar.innerText = user.first_name ? user.first_name.charAt(0).toUpperCase() : '🎮';
+        // Load Initial Data
+        const user = tg.initDataUnsafe?.user;
+        if(user) {
+            document.getElementById('u-name').innerText = user.first_name;
+            document.getElementById('center-txt').innerText = user.first_name.charAt(0).toUpperCase();
         }
 
-        // Load Balance from CloudStorage
-        tg.CloudStorage.getItem('crypto_spin_balance', (err, val) => {
+        tg.CloudStorage.getItem('spin_score', (err, val) => {
             if(!err && val) {
-                balance = parseInt(val);
-                balanceDisplay.innerText = balance;
+                score = parseInt(val);
+                document.getElementById('balance').innerText = score;
             }
         });
 
-        // --- Core Game Logic ---
-        function startSpinFlow() {
-            if(isSpinning) return;
+        function initSpin() {
+            if(spinning) return;
             
-            spinBtn.disabled = true;
-            spinBtn.innerText = "Loading Ad...";
-            statusMessage.innerText = "Waiting for ad...";
+            const btn = document.getElementById('spinBtn');
+            const msg = document.getElementById('msg');
+            
+            btn.disabled = true;
+            btn.innerText = "LOADING...";
+            msg.innerText = "Connecting to Ad Server...";
 
-            // Show Adsgram Rewarded Ad
             AdController.show().then(r => {
                 if(r.done) {
-                    spinBtn.innerText = "Spinning...";
-                    spinWheel();
+                    startRotation();
                 } else {
-                    statusMessage.innerText = "Ad not completed. Try again!";
-                    resetSpinButton();
+                    msg.innerText = "Ad not finished!";
+                    btn.disabled = false;
+                    btn.innerText = "SPIN NOW";
                 }
             }).catch(() => {
-                // Fallback: If ad fails to load, still let user spin
-                statusMessage.innerText = "Ad unavailable. Spinning anyway!";
-                spinBtn.innerText = "Spinning...";
-                spinWheel();
+                // Fallback: Agar ad block ho ya na chale toh bhi spin hone do
+                startRotation();
             });
         }
 
-        function spinWheel() {
-            isSpinning = true;
-            const randomIndex = Math.floor(Math.random() * segmentCount);
-            const targetDegree = 360 - (randomIndex * segmentAngle + segmentAngle / 2); // Center of the winning segment
+        function startRotation() {
+            spinning = true;
+            const wheel = document.getElementById('wheel');
+            const btn = document.getElementById('spinBtn');
             
-            // Add multiple full rotations for a satisfying spin
-            const totalRotation = currentRotation + 360 * 5 + targetDegree; 
-            wheel.style.transform = `rotate(${totalRotation}deg)`;
+            btn.innerText = "SPINNING...";
+            const extraDeg = Math.floor(Math.random() * 360) + 1800; // 5 full rounds + random
+            rotation += extraDeg;
+            
+            wheel.style.transform = `rotate(${rotation}deg)`;
 
             setTimeout(() => {
-                currentRotation = totalRotation % 360; // Keep track for next spin
-                let winAmount = prizes[randomIndex];
+                const finalDeg = rotation % 360;
+                let win = 0;
                 
-                balance += winAmount;
-                balanceDisplay.innerText = balance;
-                tg.CloudStorage.setItem('crypto_spin_balance', balance.toString());
+                // Simple Prize Logic
+                if(finalDeg >= 0 && finalDeg < 60) win = 100;
+                else if(finalDeg >= 60 && finalDeg < 120) win = 10;
+                else if(finalDeg >= 120 && finalDeg < 180) win = 500;
+                else if(finalDeg >= 180 && finalDeg < 240) win = 50;
+                else if(finalDeg >= 240 && finalDeg < 300) win = 250;
+                else win = 20;
+
+                score += win;
+                document.getElementById('balance').innerText = score;
+                tg.CloudStorage.setItem('spin_score', score.toString());
                 
-                tg.showAlert(`🎉 You won 💰 ${winAmount} coins!`);
-                statusMessage.innerText = `Last win: ${winAmount} coins.`;
-                resetSpinButton();
+                tg.showAlert(`🎉 You won ${win} coins!`);
+                spinning = false;
+                btn.disabled = false;
+                btn.innerText = "SPIN NOW";
+                document.getElementById('msg').innerText = "Congratulations!";
                 tg.HapticFeedback.notificationOccurred('success');
-            }, 5000); // Spin duration
+            }, 4100);
         }
-
-        function resetSpinButton() {
-            isSpinning = false;
-            spinBtn.disabled = false;
-            spinBtn.innerText = "SPIN NOW";
-            if (!statusMessage.innerText.includes("Last win")) { // Don't overwrite win message
-                 statusMessage.innerText = "Watch a short ad for 1 FREE Spin!";
-            }
-        }
-
     </script>
 </body>
 </html>
