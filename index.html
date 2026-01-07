@@ -3,189 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Fruit Crypto Farm</title>
+    <title>Lucky Spin & Earn</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://adsgram.ai/sdk-v1.js"></script>
     <style>
-        :root { --primary: #4caf50; --bg: #f8faf9; --card: #ffffff; --text: #333; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
-        .page { display: none; padding: 15px; }
-        .page.active { display: block; }
-        .top-bar { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10; }
-        .user-info { font-weight: bold; font-size: 1.1rem; color: #555; }
-        .coin-box { color: #fbc02d; background: #fffde7; padding: 5px 12px; border-radius: 20px; border: 1px solid #fff176; font-weight: bold; }
-        .farm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        .slot-card { background: var(--card); border-radius: 15px; padding: 10px; border: 1px solid #e0e0e0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .slot-card img { width: 80%; max-width: 90px; margin: 10px 0; }
-        .harvest-btn { background: #ffca28; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; color: #5d4037; font-size: 13px; }
-        .harvest-btn:disabled { background: #eee; color: #999; }
-        .shop-item { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #eee; }
-        .shop-item img { width: 50px; }
-        .buy-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; }
-        .withdraw-card { background: white; border-radius: 15px; padding: 20px; text-align: center; border: 1px solid #eee; }
-        input { width: 90%; padding: 12px; margin: 15px 0; border-radius: 10px; border: 1px solid #ddd; outline: none; }
-        .action-btn { background: #2196f3; color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-weight: bold; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-        .nav-item { font-size: 12px; color: #777; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
-        .nav-item.active { color: var(--primary); font-weight: bold; }
-        .nav-icon { font-size: 22px; }
+        :root { --gold: #f1c40f; --dark: #1a1a1a; --card: #2d2d2d; --text: #ffffff; }
+        body { background: var(--dark); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; overflow: hidden; }
+        
+        .header { padding: 20px; background: var(--card); border-bottom: 2px solid var(--gold); }
+        .balance-box { font-size: 24px; font-weight: bold; color: var(--gold); margin-top: 10px; }
+
+        /* Wheel Design */
+        .wheel-container { position: relative; width: 300px; height: 300px; margin: 40px auto; border: 10px solid var(--gold); border-radius: 50%; box-shadow: 0 0 20px rgba(241, 196, 15, 0.3); }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); background: conic-gradient(#e74c3c 0deg 60deg, #3498db 60deg 120deg, #2ecc71 120deg 180deg, #f1c40f 180deg 240deg, #9b59b6 240deg 300deg, #e67e22 300deg 360deg); }
+        .pointer { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); width: 40px; z-index: 10; }
+
+        .spin-btn { background: var(--gold); border: none; padding: 15px 50px; border-radius: 30px; font-size: 20px; font-weight: bold; cursor: pointer; color: #000; margin-top: 30px; box-shadow: 0 5px 15px rgba(241, 196, 15, 0.4); }
+        .spin-btn:disabled { background: #555; color: #888; box-shadow: none; }
+
+        .info-text { margin-top: 20px; font-size: 14px; color: #aaa; }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <div class="user-info" id="user-name">Loading...</div>
-        <div class="coin-box">💰 <span id="balance">0</span></div>
+    <div class="header">
+        <div id="u-name">Welcome!</div>
+        <div class="balance-box">💰 <span id="balance">0</span></div>
     </div>
 
-    <div id="farm-page" class="page active">
-        <div class="farm-grid">
-            <div class="slot-card">
-                <div style="display:flex; justify-content: space-between; font-size: 10px; font-weight:bold;">
-                    <span>Banana Tree</span>
-                    <span style="color:#f44336;">ADS</span>
-                </div>
-                <img src="https://cdn-icons-png.flaticon.com/512/2329/2329865.png">
-                <button class="harvest-btn" id="hBtn" onclick="showAd()">Harvest 40 pts</button>
-                <div id="timer" style="font-size: 11px; margin-top: 8px; color: #4caf50;">Ready!</div>
-            </div>
-            <div class="slot-card" id="slot-2" style="border: 2px dashed #ccc; background: #f1f1f1; display:flex; align-items:center; justify-content:center; color:#999; min-height: 180px;">Empty Slot</div>
-        </div>
+    <div class="wheel-container">
+        <img src="https://cdn-icons-png.flaticon.com/512/8215/8215539.png" class="pointer">
+        <div id="wheel"></div>
     </div>
 
-    <div id="shop-page" class="page">
-        <h3>Seed Market</h3>
-        <div class="shop-item">
-            <img src="https://cdn-icons-png.flaticon.com/512/415/415733.png">
-            <div><b>Apple Tree</b><br><small>Earn 100 pts / 3 min</small></div>
-            <button class="buy-btn" id="buyAppleBtn" onclick="buyApple()">500 💰</button>
-        </div>
-    </div>
-
-    <div id="withdraw-page" class="page">
-        <div class="withdraw-card">
-            <img src="https://cdn-icons-png.flaticon.com/512/2482/2482847.png" style="width: 80px;">
-            <h3>Withdraw Balance</h3>
-            <p style="color: #666;">Minimum: 50,000 Coins</p>
-            <input type="text" placeholder="Enter TON Wallet Address">
-            <button class="action-btn" onclick="tg.showAlert('Minimum limit not reached!')">Confirm Withdrawal</button>
-        </div>
-    </div>
-
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="showPage('farm-page', this)"><span class="nav-icon">🌲</span>Farm</div>
-        <div class="nav-item" onclick="showPage('shop-page', this)"><span class="nav-icon">🏪</span>Shop</div>
-        <div class="nav-item" onclick="showPage('withdraw-page', this)"><span class="nav-icon">₿</span>Withdraw</div>
-    </nav>
+    <button class="spin-btn" id="spinBtn" onclick="startSpinFlow()">SPIN NOW</button>
+    
+    <div class="info-text" id="status">Watch an ad to get 1 Free Spin!</div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
         
-        // Adsgram Initialized
+        // Aapki Block ID: 20692
         const AdController = window.Adsgram.init({ blockId: "20692" });
 
-        let score = 0;
-        let nextHarvestTime = 0;
-        let isDataLoaded = false;
-        let appleUnlocked = false;
+        let balance = 0;
+        let isSpinning = false;
+        let currentRotation = 0;
 
-        const hBtn = document.getElementById('hBtn');
-        const timerDisplay = document.getElementById('timer');
-        const balanceDisplay = document.getElementById('balance');
+        document.getElementById('u-name').innerText = "Hello, " + (tg.initDataUnsafe?.user?.first_name || "Player");
 
-        function showPage(pageId, element) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            element.classList.add('active');
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
-        document.getElementById('user-name').innerText = tg.initDataUnsafe?.user?.first_name || "Farmer";
-
-        // Loading all items including apple status
-        tg.CloudStorage.getItems(['user_coins', 'next_harvest', 'apple_unlocked'], (err, values) => {
-            if (!err) {
-                score = values.user_coins ? parseInt(values.user_coins) : 0;
-                nextHarvestTime = values.next_harvest ? parseInt(values.next_harvest) : 0;
-                appleUnlocked = values.apple_unlocked === 'true';
-                
-                balanceDisplay.innerText = score;
-                if(appleUnlocked) renderApple();
+        // Sync Data
+        tg.CloudStorage.getItem('spin_balance', (err, val) => {
+            if(!err && val) {
+                balance = parseInt(val);
+                document.getElementById('balance').innerText = balance;
             }
-            isDataLoaded = true;
-            startTimerLogic();
         });
 
-        function showAd() {
-            hBtn.disabled = true;
-            hBtn.innerText = "Loading Ad...";
+        function startSpinFlow() {
+            if(isSpinning) return;
+            
+            const btn = document.getElementById('spinBtn');
+            btn.disabled = true;
+            btn.innerText = "Loading Ad...";
 
-            AdController.show().then((result) => {
-                if (result.done) {
-                    handleHarvest(40);
-                    tg.showAlert("Success! +40 Coins");
-                } else {
-                    hBtn.disabled = false;
-                    hBtn.innerText = "Harvest 40 pts";
-                }
+            AdController.show().then(r => {
+                if(r.done) spinWheel();
+                else resetUI();
             }).catch(() => {
-                handleHarvest(40); // Fallback if ad fails
-                tg.showAlert("Ad not available, but coins added!");
+                spinWheel(); // Backup
             });
         }
 
-        function handleHarvest(pts) {
-            score += pts;
-            balanceDisplay.innerText = score;
-            nextHarvestTime = Date.now() + (3 * 60 * 1000);
-            tg.CloudStorage.setItem('user_coins', score.toString());
-            tg.CloudStorage.setItem('next_harvest', nextHarvestTime.toString());
-            tg.HapticFeedback.impactOccurred('medium');
+        function spinWheel() {
+            isSpinning = true;
+            const wheel = document.getElementById('wheel');
+            const randomDegree = Math.floor(Math.random() * 360) + 1800; // 5 full rotations min
+            currentRotation += randomDegree;
+            
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+            setTimeout(() => {
+                const actualDegree = currentRotation % 360;
+                calculatePrize(actualDegree);
+            }, 4000);
         }
 
-        function buyApple() {
-            if (score >= 500 && !appleUnlocked) {
-                score -= 500;
-                appleUnlocked = true;
-                balanceDisplay.innerText = score;
-                tg.CloudStorage.setItem('user_coins', score.toString());
-                tg.CloudStorage.setItem('apple_unlocked', 'true');
-                renderApple();
-                tg.showAlert("Apple Tree Purchased!");
-            } else {
-                tg.showAlert(appleUnlocked ? "Already owned!" : "Not enough coins!");
-            }
+        function calculatePrize(deg) {
+            let win = 0;
+            // Simple logic for prizes based on degrees
+            if(deg >= 0 && deg < 60) win = 50;
+            else if(deg >= 60 && deg < 120) win = 10;
+            else if(deg >= 120 && deg < 180) win = 100;
+            else if(deg >= 180 && deg < 240) win = 5;
+            else if(deg >= 240 && deg < 300) win = 200;
+            else win = 20;
+
+            balance += win;
+            document.getElementById('balance').innerText = balance;
+            tg.CloudStorage.setItem('spin_balance', balance.toString());
+            
+            tg.showAlert(`Congratulations! You won 💰 ${win} coins!`);
+            resetUI();
+            tg.HapticFeedback.notificationOccurred('success');
         }
 
-        function renderApple() {
-            const slot2 = document.getElementById('slot-2');
-            slot2.innerHTML = `
-                <div style="font-size: 10px; font-weight:bold;">Apple Tree</div>
-                <img src="https://cdn-icons-png.flaticon.com/512/415/415733.png">
-                <button class="harvest-btn" onclick="handleHarvest(100)" style="background:#4caf50; color:white;">Harvest 100</button>
-            `;
-            slot2.style.background = "white";
-            slot2.style.border = "1px solid #e0e0e0";
-            document.getElementById('buyAppleBtn').innerText = "OWNED";
-        }
-
-        function startTimerLogic() {
-            setInterval(() => {
-                if (!isDataLoaded) return;
-                const diff = nextHarvestTime - Date.now();
-                if (diff <= 0) {
-                    hBtn.disabled = false; hBtn.innerText = "Harvest 40 pts";
-                    timerDisplay.innerText = "Ready!";
-                } else {
-                    hBtn.disabled = true;
-                    const m = Math.floor(diff / 60000);
-                    const s = Math.floor((diff % 60000) / 1000);
-                    hBtn.innerText = "Growing...";
-                    timerDisplay.innerText = `Wait: ${m}m ${s}s`;
-                }
-            }, 1000);
+        function resetUI() {
+            isSpinning = false;
+            const btn = document.getElementById('spinBtn');
+            btn.disabled = false;
+            btn.innerText = "SPIN NOW";
         }
     </script>
 </body>
